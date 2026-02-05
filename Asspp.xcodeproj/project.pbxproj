@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 70;
+	objectVersion = 71;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -18,28 +18,24 @@
 		50D44D232C3F92C500CF6A69 /* NIOSSL in Frameworks */ = {isa = PBXBuildFile; productRef = 50D44D222C3F92C500CF6A69 /* NIOSSL */; };
 		50D44D3F2C3FA59500CF6A69 /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = 50D44D3E2C3FA59500CF6A69 /* Kingfisher */; };
 		50D44D512C3FC85F00CF6A69 /* AnyCodable in Frameworks */ = {isa = PBXBuildFile; productRef = 50D44D502C3FC85F00CF6A69 /* AnyCodable */; };
+		50DCBD782F346E01007100D2 /* Certificates in Resources */ = {isa = PBXBuildFile; fileRef = 50DCBD772F346DFE007100D2 /* Certificates */; };
 		50E28B812C40BA52007891E0 /* ColorfulX in Frameworks */ = {isa = PBXBuildFile; productRef = 50E28B802C40BA52007891E0 /* ColorfulX */; };
-		50E6C5682C40CB7500460DB5 /* Certificates in Resources */ = {isa = PBXBuildFile; fileRef = 50E6C5672C40CB7500460DB5 /* Certificates */; };
 		80CD64ED2C42AA2C0073E206 /* KeychainAccess in Frameworks */ = {isa = PBXBuildFile; productRef = 80CD64EC2C42AA2C0073E206 /* KeychainAccess */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		507952E92E78740900954B8A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		50D44D022C3F91F700CF6A69 /* Asspp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Asspp.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		50E6C5672C40CB7500460DB5 /* Certificates */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Certificates; path = Resources/Certificates; sourceTree = SOURCE_ROOT; };
-		80CD64EA2C42A7E80073E206 /* Asspp.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Asspp.entitlements; sourceTree = "<group>"; };
-		C0NF1G001000000000000001 /* Version.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Version.xcconfig; sourceTree = "<group>"; };
-		C0NF1G001000000000000002 /* Base.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Base.xcconfig; sourceTree = "<group>"; };
-		C0NF1G001000000000000003 /* Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Debug.xcconfig; sourceTree = "<group>"; };
-		C0NF1G001000000000000004 /* Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Release.xcconfig; sourceTree = "<group>"; };
-		C0NF1G001000000000000005 /* Developer.xcconfig.template */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Developer.xcconfig.template; sourceTree = "<group>"; };
+		50DCBD772F346DFE007100D2 /* Certificates */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Certificates; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		50669D0F2E99051F007E662F /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
+		50DCBC2D2F346C6F007100D2 /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
 			platformFiltersByRelativePath = {
-				LaunchScreen.storyboard = (
+				App/LaunchScreen.storyboard = (
 					ios,
 				);
 			};
@@ -48,10 +44,8 @@
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		5081AB832E77CD1800F6E9F0 /* App */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (50669D0F2E99051F007E662F /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = App; sourceTree = "<group>"; };
-		5081AB952E77CD1800F6E9F0 /* Backend */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Backend; sourceTree = "<group>"; };
-		5081AB982E77CD1800F6E9F0 /* Extension */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Extension; sourceTree = "<group>"; };
-		5081ABAF2E77CD1800F6E9F0 /* Interface */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Interface; sourceTree = "<group>"; };
+		50DCBBB42F346C57007100D2 /* Configuration */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Configuration; sourceTree = "<group>"; };
+		50DCBBF92F346C6F007100D2 /* Asspp */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (50DCBC2D2F346C6F007100D2 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = Asspp; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -81,23 +75,12 @@
 		50D44CF92C3F91F700CF6A69 = {
 			isa = PBXGroup;
 			children = (
-				C0NF1G001000000000000000 /* Configuration */,
-				50D44D042C3F91F700CF6A69 /* Asspp */,
+				50DCBBB42F346C57007100D2 /* Configuration */,
+				50DCBD772F346DFE007100D2 /* Certificates */,
+				50DCBBF92F346C6F007100D2 /* Asspp */,
 				50D44D032C3F91F700CF6A69 /* Products */,
 				50D44D172C3F92A100CF6A69 /* Frameworks */,
 			);
-			sourceTree = "<group>";
-		};
-		C0NF1G001000000000000000 /* Configuration */ = {
-			isa = PBXGroup;
-			children = (
-				C0NF1G001000000000000001 /* Version.xcconfig */,
-				C0NF1G001000000000000002 /* Base.xcconfig */,
-				C0NF1G001000000000000003 /* Debug.xcconfig */,
-				C0NF1G001000000000000004 /* Release.xcconfig */,
-				C0NF1G001000000000000005 /* Developer.xcconfig.template */,
-			);
-			path = Configuration;
 			sourceTree = "<group>";
 		};
 		50D44D032C3F91F700CF6A69 /* Products */ = {
@@ -106,20 +89,6 @@
 				50D44D022C3F91F700CF6A69 /* Asspp.app */,
 			);
 			name = Products;
-			sourceTree = "<group>";
-		};
-		50D44D042C3F91F700CF6A69 /* Asspp */ = {
-			isa = PBXGroup;
-			children = (
-				507952E92E78740900954B8A /* Info.plist */,
-				80CD64EA2C42A7E80073E206 /* Asspp.entitlements */,
-				5081AB832E77CD1800F6E9F0 /* App */,
-				5081AB952E77CD1800F6E9F0 /* Backend */,
-				5081AB982E77CD1800F6E9F0 /* Extension */,
-				5081ABAF2E77CD1800F6E9F0 /* Interface */,
-				50E6C5672C40CB7500460DB5 /* Certificates */,
-			);
-			path = Asspp;
 			sourceTree = "<group>";
 		};
 		50D44D172C3F92A100CF6A69 /* Frameworks */ = {
@@ -137,7 +106,6 @@
 			buildConfigurationList = 50D44D102C3F91F800CF6A69 /* Build configuration list for PBXNativeTarget "Asspp" */;
 			buildPhases = (
 				C0NF1G001000000000000006 /* Check Developer.xcconfig */,
-				8199E8E92E7AA3030042F7F9 /* Run SwiftFormat */,
 				50D44CFE2C3F91F700CF6A69 /* Sources */,
 				50D44CFF2C3F91F700CF6A69 /* Frameworks */,
 				50D44D002C3F91F700CF6A69 /* Resources */,
@@ -147,10 +115,7 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				5081AB832E77CD1800F6E9F0 /* App */,
-				5081AB952E77CD1800F6E9F0 /* Backend */,
-				5081AB982E77CD1800F6E9F0 /* Extension */,
-				5081ABAF2E77CD1800F6E9F0 /* Interface */,
+				50DCBBF92F346C6F007100D2 /* Asspp */,
 			);
 			name = Asspp;
 			packageProductDependencies = (
@@ -223,7 +188,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				50E6C5682C40CB7500460DB5 /* Certificates in Resources */,
+				50DCBD782F346E01007100D2 /* Certificates in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -249,25 +214,6 @@
 			shellPath = /bin/sh;
 			shellScript = "DEVELOPER_CONFIG=\"${SRCROOT}/Configuration/Developer.xcconfig\"\nTEMPLATE_CONFIG=\"${SRCROOT}/Configuration/Developer.xcconfig.template\"\n\nif [ ! -f \"$DEVELOPER_CONFIG\" ]; then\n    echo \"error: Developer.xcconfig not found!\"\n    echo \"error: Please copy Developer.xcconfig.template to Developer.xcconfig and configure your signing settings.\"\n    echo \"error: Run: cp \\\"$TEMPLATE_CONFIG\\\" \\\"$DEVELOPER_CONFIG\\\"\"\n    exit 1\nfi\n\necho \"Developer.xcconfig found.\"\n";
 		};
-		8199E8E92E7AA3030042F7F9 /* Run SwiftFormat */ = {
-			isa = PBXShellScriptBuildPhase;
-			alwaysOutOfDate = 1;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-			);
-			name = "Run SwiftFormat";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "if [ \"${CONFIGURATION}\" = \"Debug\" ]; then\n    SDKROOT=(xcrun --sdk macosx --show-sdk-path)\n    echo \"Running SwiftFormat at BuildTools with $SDKROOT\"\n\n    swift run -c release --package-path BuildTools swiftformat \"$SRCROOT\" --config \"$SRCROOT/.swiftformat\" \nfi\n";
-		};
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -283,7 +229,8 @@
 /* Begin XCBuildConfiguration section */
 		50D44D0E2C3F91F800CF6A69 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = C0NF1G001000000000000003 /* Debug.xcconfig */;
+			baseConfigurationReferenceAnchor = 50DCBBB42F346C57007100D2 /* Configuration */;
+			baseConfigurationReferenceRelativePath = Debug.xcconfig;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
@@ -335,7 +282,8 @@
 		};
 		50D44D0F2C3F91F800CF6A69 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = C0NF1G001000000000000004 /* Release.xcconfig */;
+			baseConfigurationReferenceAnchor = 50DCBBB42F346C57007100D2 /* Configuration */;
+			baseConfigurationReferenceRelativePath = Release.xcconfig;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
@@ -386,14 +334,16 @@
 		};
 		50D44D112C3F91F800CF6A69 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = C0NF1G001000000000000003 /* Debug.xcconfig */;
+			baseConfigurationReferenceAnchor = 50DCBBB42F346C57007100D2 /* Configuration */;
+			baseConfigurationReferenceRelativePath = Debug.xcconfig;
 			buildSettings = {
 			};
 			name = Debug;
 		};
 		50D44D122C3F91F800CF6A69 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = C0NF1G001000000000000004 /* Release.xcconfig */;
+			baseConfigurationReferenceAnchor = 50DCBBB42F346C57007100D2 /* Configuration */;
+			baseConfigurationReferenceRelativePath = Release.xcconfig;
 			buildSettings = {
 			};
 			name = Release;

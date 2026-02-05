@@ -133,15 +133,25 @@ class AppPackageArchive: ObservableObject {
 
 @MainActor
 extension AppPackageArchive {
-    var version: String { package.software.version }
+    var version: String {
+        package.software.version
+    }
 
-    var releaseDate: Date? { package.releaseDate }
+    var releaseDate: Date? {
+        package.releaseDate
+    }
 
-    var releaseNotes: String? { package.software.releaseNotes }
+    var releaseNotes: String? {
+        package.software.releaseNotes
+    }
 
-    var formattedPrice: String { package.software.formattedPrice }
+    var formattedPrice: String {
+        package.software.formattedPrice
+    }
 
-    var price: Double? { package.software.price }
+    var price: Double? {
+        package.software.price
+    }
 
     var downloadOutput: DownloadOutput? {
         get { package.downloadOutput }

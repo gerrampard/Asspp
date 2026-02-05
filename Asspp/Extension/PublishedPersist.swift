@@ -19,7 +19,7 @@ private let valueDecoder = JSONDecoder()
 private let configDir = documentsDirectory
     .appendingPathComponent("Config")
 
-/*
+/**
  We do not encrypt so we exclude these from backup.
  That means, no one else is able to access it if app is properly signed.
  */
@@ -113,7 +113,9 @@ extension PublishedPersist {
 struct PublishedPersist<Value: Codable> {
     @Persist private var value: Value
 
-    var projectedValue: AnyPublisher<Value, Never> { $value }
+    var projectedValue: AnyPublisher<Value, Never> {
+        $value
+    }
 
     @available(*, unavailable, message: "accessing wrappedValue will result undefined behavior")
     var wrappedValue: Value {

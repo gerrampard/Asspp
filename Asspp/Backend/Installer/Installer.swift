@@ -68,7 +68,7 @@ class Installer: Identifiable, ObservableObject, @unchecked Sendable {
                 await MainActor.run { self.status = .sendingPayload }
                 logger.info("starting payload transfer for installer id: \(self.id)")
 
-                let result = try await req.fileio.asyncStreamFile(
+                return try await req.fileio.asyncStreamFile(
                     at: packagePath.path,
                     chunkSize: 64 * 1024
                 ) { result in
@@ -81,7 +81,6 @@ class Installer: Identifiable, ObservableObject, @unchecked Sendable {
                         }
                     }
                 }
-                return result
             default:
                 // 404
                 logger.warning("unknown request path: \(req.url.path) for installer id: \(self.id)")
@@ -93,7 +92,7 @@ class Installer: Identifiable, ObservableObject, @unchecked Sendable {
         logger.info("installer init at port \(port) for sni \(Self.sni)")
     }
 
-    // avoid misleading name, default parm Installer.ca is not used
+    /// avoid misleading name, default parm Installer.ca is not used
     init(certificateAtPath: String) async throws {
         precondition(Installer.caInstaller == nil)
 

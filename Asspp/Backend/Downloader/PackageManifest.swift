@@ -6,7 +6,6 @@
 //
 
 import AnyCodable // Moved to Request.swift
-
 import ApplePackage
 import Foundation
 
@@ -43,7 +42,9 @@ class PackageManifest: ObservableObject, Identifiable, Codable, Hashable, Equata
             .appendingPathExtension("ipa")
     }
 
-    var completed: Bool { state.status == .completed }
+    var completed: Bool {
+        state.status == .completed
+    }
 
     func waitForCompletion(timeout: TimeInterval? = nil) async {
         let start = Date().timeIntervalSince1970

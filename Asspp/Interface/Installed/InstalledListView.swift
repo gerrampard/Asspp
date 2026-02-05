@@ -67,7 +67,10 @@
 
     private struct AppRow: View {
         @StateObject var vm = AppStore.this
-        var preferredIconSize: CGFloat? { 50 }
+        var preferredIconSize: CGFloat? {
+            50
+        }
+
         let app: DeviceManager.InstalledApp
         let action: () -> Void
         var body: some View {

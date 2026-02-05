@@ -229,7 +229,9 @@
 
     extension DeviceManager {
         struct InstalledAppInfo: Codable, Identifiable, Hashable {
-            var id: String { package.id }
+            var id: String {
+                package.id
+            }
 
             var package: AppStore.AppPackage
 

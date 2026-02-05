@@ -69,7 +69,9 @@ struct MainView: View {
         case installed
         case settings
 
-        var id: Self { self }
+        var id: Self {
+            self
+        }
 
         var title: LocalizedStringKey {
             switch self {

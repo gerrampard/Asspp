@@ -73,7 +73,6 @@ struct SearchView: View {
         regionKeys.filter { possibleRegion.contains($0) }
     }
 
-    @ViewBuilder
     func searchRegionView(isAllRegionsWrappedInMenu: Bool = true) -> some View {
         Group {
             if !possibleRegionKeys.isEmpty {

@@ -42,7 +42,6 @@ struct PackageDisplayView: View {
             .padding(.vertical, 4)
     }
 
-    @ViewBuilder
     var _body: some View {
         VStack(alignment: .leading, spacing: 8) {
             ArchivePreviewView(archive: archive, preferredIconSize: 70, lineLimit: nil)

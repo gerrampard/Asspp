@@ -72,7 +72,7 @@ func AirDrop(
                 return keyWindow
             }
             // if apple remove this shit, we fall back to ugly solution
-            let keyWindow = UIApplication
+            return UIApplication
                 .shared
                 .connectedScenes
                 .filter { $0.activationState == .foregroundActive }
@@ -81,7 +81,6 @@ func AirDrop(
                 .windows
                 .filter(\.isKeyWindow)
                 .first
-            return keyWindow
         }
     }
 

@@ -68,8 +68,7 @@
             if let error = NSError(codable: result["error"]) {
                 throw error
             }
-            let devices = result["result"]["devices"].asArray().compactMap(Device.init(_:))
-            return devices
+            return result["result"]["devices"].asArray().compactMap(Device.init(_:))
         }
 
         static func install(ipa: URL, to device: Device, process: Process) async throws {
@@ -97,8 +96,7 @@
             if let error = NSError(codable: codable["error"]) {
                 throw error
             }
-            let apps = codable["result"]["apps"].asArray().compactMap(App.init(_:))
-            return apps
+            return codable["result"]["apps"].asArray().compactMap(App.init(_:))
         }
     }
 

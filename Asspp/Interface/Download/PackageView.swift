@@ -20,7 +20,9 @@ struct PackageView: View {
         pkg.package
     }
 
-    var url: URL { pkg.targetLocation }
+    var url: URL {
+        pkg.targetLocation
+    }
 
     @Environment(\.dismiss) var dismiss
     #if os(iOS)

@@ -10,7 +10,10 @@ import Foundation
 
 extension AppStore {
     struct UserAccount: Codable, Identifiable, Hashable, Equatable, Sendable {
-        var id: String { account.email }
+        var id: String {
+            account.email
+        }
+
         var account: ApplePackage.Account
 
         init(account: ApplePackage.Account) {

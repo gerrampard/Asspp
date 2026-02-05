@@ -10,7 +10,9 @@ import Foundation
 
 extension AppStore {
     struct AppPackage: Codable, Identifiable, Hashable {
-        var id: String { software.bundleID }
+        var id: String {
+            software.bundleID
+        }
 
         var software: ApplePackage.Software
         var releaseDate: Date?
