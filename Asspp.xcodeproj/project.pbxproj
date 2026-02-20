@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		50184B892E7860D500402B74 /* Dynamic in Frameworks */ = {isa = PBXBuildFile; productRef = 50184B882E7860D500402B74 /* Dynamic */; };
 		507974632E784D4E0016F540 /* Digger in Frameworks */ = {isa = PBXBuildFile; productRef = 507974622E784D4E0016F540 /* Digger */; };
 		50ABFB122F48A6D60077DE1A /* ApplePackage in Frameworks */ = {isa = PBXBuildFile; productRef = 50ABFB112F48A6D60077DE1A /* ApplePackage */; };
 		50ABFE1F2F48AAE50077DE1A /* ButtonKit in Frameworks */ = {isa = PBXBuildFile; productRef = 50ABFE1E2F48AAE50077DE1A /* ButtonKit */; };
@@ -62,7 +61,6 @@
 				507974632E784D4E0016F540 /* Digger in Frameworks */,
 				50D44D1E2C3F92BB00CF6A69 /* NIOHTTP1 in Frameworks */,
 				50D262942E77D63B00FF8813 /* Logging in Frameworks */,
-				50184B892E7860D500402B74 /* Dynamic in Frameworks */,
 				50ABFB122F48A6D60077DE1A /* ApplePackage in Frameworks */,
 				50ABFE1F2F48AAE50077DE1A /* ButtonKit in Frameworks */,
 				50D44D512C3FC85F00CF6A69 /* AnyCodable in Frameworks */,
@@ -135,7 +133,6 @@
 				80CD64EC2C42AA2C0073E206 /* KeychainAccess */,
 				50D262932E77D63B00FF8813 /* Logging */,
 				507974622E784D4E0016F540 /* Digger */,
-				50184B882E7860D500402B74 /* Dynamic */,
 				50ABFB112F48A6D60077DE1A /* ApplePackage */,
 				50ABFE1E2F48AAE50077DE1A /* ButtonKit */,
 			);
@@ -178,7 +175,6 @@
 				80CD64EB2C42AA2C0073E206 /* XCRemoteSwiftPackageReference "KeychainAccess" */,
 				50D262922E77D63B00FF8813 /* XCRemoteSwiftPackageReference "swift-log" */,
 				507974612E784D4E0016F540 /* XCRemoteSwiftPackageReference "Digger" */,
-				50184B872E7860D500402B74 /* XCRemoteSwiftPackageReference "Dynamic" */,
 				50ABFB102F48A6D60077DE1A /* XCRemoteSwiftPackageReference "ApplePackage" */,
 				50ABFE1D2F48AAE50077DE1A /* XCRemoteSwiftPackageReference "ButtonKit" */,
 			);
@@ -396,14 +392,6 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		50184B872E7860D500402B74 /* XCRemoteSwiftPackageReference "Dynamic" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/mhdhejazi/Dynamic.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 1.2.0;
-			};
-		};
 		507974612E784D4E0016F540 /* XCRemoteSwiftPackageReference "Digger" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/Lakr233/Digger";
@@ -495,11 +483,6 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		50184B882E7860D500402B74 /* Dynamic */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 50184B872E7860D500402B74 /* XCRemoteSwiftPackageReference "Dynamic" */;
-			productName = Dynamic;
-		};
 		507974622E784D4E0016F540 /* Digger */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 507974612E784D4E0016F540 /* XCRemoteSwiftPackageReference "Digger" */;
