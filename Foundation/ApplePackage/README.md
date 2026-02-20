@@ -2,6 +2,8 @@
 
 A Swift package and command-line tool for managing Apple apps, including searching, downloading, and authenticating with Apple services.
 
+For a version with a graphical user interface (GUI) and an on-device installer, check out [Asspp](https://github.com/Lakr233/Asspp).
+
 ## Features
 
 - **Authentication**: Login and logout from Apple accounts
@@ -117,6 +119,12 @@ let results = try await Searcher.search(term: "example", countryCode: "US", limi
 - [AsyncHTTPClient](https://github.com/swift-server/async-http-client.git)
 - [Swift Collections](https://github.com/apple/swift-collections.git)
 - [Swift Argument Parser](https://github.com/apple/swift-argument-parser)
+
+## Acknowledgments
+
+- [ipatool](https://github.com/majd/ipatool) - Original inspiration and reference implementation
+- [at-wr](https://github.com/at-wr) - Testing and quality assurance
+- [Claude Code](https://claude.ai/code) by Anthropic - AI-assisted development
 
 ## Contributing
 

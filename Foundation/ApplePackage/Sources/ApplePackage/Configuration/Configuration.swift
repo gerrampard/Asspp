@@ -10,7 +10,7 @@ import Foundation
 import NIOSSL
 
 public enum Configuration {
-    /*
+    /**
      DeviceIdentifier is a unique identifier for your device.
 
      - On macOS, it is a MAC address and can be read by calling DeviceIdentifier.system.
@@ -49,13 +49,31 @@ public enum Configuration {
         public nonisolated(unsafe) static var homePath: URL = FileManager.default
             .homeDirectoryForCurrentUser
             .appendingPathComponent(".ipatool", isDirectory: true)
-        { didSet { assert(homePath.isFileURL) } }
+        {
+            didSet { assert(homePath.isFileURL) }
+        }
     #else
         public nonisolated(unsafe) static var homePath: URL = FileManager.default
             .urls(for: .documentDirectory, in: .userDomainMask).first!
             .appendingPathComponent(".ipatool", isDirectory: true)
-        { didSet { assert(homePath.isFileURL) } }
+        {
+            didSet { assert(homePath.isFileURL) }
+        }
     #endif
+
+    public static func storeAPIHost(pod: String?) -> String {
+        guard let pod, !pod.isEmpty else {
+            return "p25-buy.itunes.apple.com"
+        }
+        return "p\(pod)-buy.itunes.apple.com"
+    }
+
+    public static func purchaseAPIHost(pod: String?) -> String {
+        guard let pod, !pod.isEmpty else {
+            return "buy.itunes.apple.com"
+        }
+        return "p\(pod)-buy.itunes.apple.com"
+    }
 
     public static func storeId(for countryCode: String) -> String? {
         storeFrontValues[countryCode]
