@@ -100,7 +100,7 @@ struct AddDownloadView: View {
             } catch {
                 await MainActor.run {
                     obtainDownloadURL = false
-                    hint = "Unable to retrieve download url, please try again later." + "\n" + error.localizedDescription
+                    hint = "Unable to retrieve download URL. Please try again later." + "\n" + error.localizedDescription
                 }
             }
         }

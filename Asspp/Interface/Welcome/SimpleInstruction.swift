@@ -31,7 +31,7 @@ struct SimpleInstruction: View {
 
             HStack {
                 Image(systemName: "3.circle.fill")
-                Text("Download and save the ipa file.")
+                Text("Download and save the IPA file.")
             }
             .frame(maxWidth: .infinity, alignment: .leading)
 
@@ -43,7 +43,7 @@ struct SimpleInstruction: View {
 
             HStack {
                 Image(systemName: "5.circle.fill")
-                Text("Install or AirDrop to install.")
+                Text("Install directly or via AirDrop.")
             }
             .frame(maxWidth: .infinity, alignment: .leading)
 

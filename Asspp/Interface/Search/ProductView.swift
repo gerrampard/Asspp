@@ -212,7 +212,7 @@ struct ProductView: View {
                 showLicenseAlert = true
             } catch {
                 obtainDownloadURL = false
-                hint = Hint(message: String(localized: "Unable to retrieve download url, please try again later.") + "\n" + error.localizedDescription, color: .red)
+                hint = Hint(message: String(localized: "Unable to retrieve download URL. Please try again later.") + "\n" + error.localizedDescription, color: .red)
             }
         }
     }
@@ -230,7 +230,7 @@ struct ProductView: View {
                     )
                 }
                 acquiringLicense = false
-                licenseHint = String(localized: "Request Successes")
+                licenseHint = String(localized: "Request Succeeded")
             } catch {
                 acquiringLicense = false
                 licenseHint = error.localizedDescription

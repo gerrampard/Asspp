@@ -62,7 +62,7 @@ struct ProductVersionView: View {
                 }
             } catch {
                 obtainDownloadURL = false
-                hint = Hint(message: String(localized: "Unable to retrieve download url, please try again later.") + "\n" + error.localizedDescription, color: .red)
+                hint = Hint(message: String(localized: "Unable to retrieve download URL. Please try again later.") + "\n" + error.localizedDescription, color: .red)
             }
         }
     }
