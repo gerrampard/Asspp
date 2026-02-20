@@ -24,6 +24,7 @@ class PackageManifest: Identifiable, Codable, Hashable, Equatable {
 
     @ObservationIgnored private(set) var url: URL
     @ObservationIgnored private(set) var signatures: [ApplePackage.Sinf]
+    @ObservationIgnored private(set) var iTunesMetadata: Data
 
     @ObservationIgnored private(set) var creation: Date
 
@@ -59,6 +60,7 @@ class PackageManifest: Identifiable, Codable, Hashable, Equatable {
         self.package = package
         url = URL(string: downloadOutput.downloadURL)!
         signatures = downloadOutput.sinfs
+        iTunesMetadata = downloadOutput.iTunesMetadata
         creation = .init()
     }
 
@@ -69,6 +71,7 @@ class PackageManifest: Identifiable, Codable, Hashable, Equatable {
         package = try container.decode(AppStore.AppPackage.self, forKey: .package)
         url = try container.decode(URL.self, forKey: .url)
         signatures = try container.decode([ApplePackage.Sinf].self, forKey: .signatures)
+        iTunesMetadata = try container.decodeIfPresent(Data.self, forKey: .iTunesMetadata) ?? Data()
         creation = try container.decode(Date.self, forKey: .creation)
         state = try container.decode(PackageState.self, forKey: .runtime)
     }
@@ -80,12 +83,13 @@ class PackageManifest: Identifiable, Codable, Hashable, Equatable {
         try container.encode(package, forKey: .package)
         try container.encode(url, forKey: .url)
         try container.encode(signatures, forKey: .signatures)
+        try container.encode(iTunesMetadata, forKey: .iTunesMetadata)
         try container.encode(creation, forKey: .creation)
         try container.encode(state, forKey: .runtime)
     }
 
     private enum CodingKeys: String, CodingKey {
-        case id, account, package, url, md5, signatures, metadata, creation, runtime
+        case id, account, package, url, md5, signatures, iTunesMetadata, metadata, creation, runtime
     }
 
     static func == (lhs: PackageManifest, rhs: PackageManifest) -> Bool {
