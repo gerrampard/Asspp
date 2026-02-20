@@ -44,6 +44,7 @@ concurrency:
 
 jobs:
   detect-upstream:
+    if: github.repository != 'Lakr233/Asspp'
     runs-on: ubuntu-latest
     outputs:
       upstream_sha: ${{ steps.detect.outputs.upstream_sha }}
