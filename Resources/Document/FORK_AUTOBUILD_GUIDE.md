@@ -1,111 +1,95 @@
-# Fork Auto-Build Guide
+# GitHub Actions Auto-Build & Sign Guide
 
-Set up your own fork to automatically track upstream updates, sign iOS builds with your developer certificate, and publish OTA-installable releases via GitHub Pages.
+This guide explains how to set up your own fork of Asspp to automatically build, sign, and publish the app using GitHub Actions.
 
-Related files:
+This allows you to:
 
-- Workflow: `.github/workflows/upstream-signed-ios.yml`
-- Input generator: `Resources/Scripts/generate.github.action.inputs.sh`
+1.  **Always have the latest version**: The workflow automatically pulls changes from the upstream repository.
+2.  **OTA Installation**: Install the app directly on your iPhone via a web link, without a computer.
+3.  **Automatic Signing**: Uses your own Apple Developer certificate.
+
+---
 
 ## 1. Prerequisites
 
-- Paid Apple Developer account
-- An `Apple Distribution` certificate (`.p12`) and an `Ad Hoc` provisioning profile (`.mobileprovision`) that includes every target device UDID
-- GitHub Actions and GitHub Pages enabled on your fork
-- Public repository recommended so OTA install links are accessible
+- **Apple Developer Account**: A paid account is required for creating the necessary certificates and provisioning profiles.
+- **Signing Assets**:
+  - **Distribution Certificate**: A `.p12` file exported from Keychain Access (with a password).
+  - **Provisioning Profile**: An Ad Hoc `.mobileprovision` file that includes your device's UDID.
+- **GitHub Account**: To fork the repository and run Actions.
 
-## 2. Repository Permissions
+## 2. Fork & Configure Repository
 
-1. Go to `Settings -> Actions -> General -> Workflow permissions` and select **Read and write permissions**
-2. Go to `Settings -> Pages` and set **Source** to `GitHub Actions`
+1.  **Fork** the [Asspp repository](https://github.com/Lakr233/Asspp) to your account.
+2.  Go to **Settings** -> **Actions** -> **General**.
+    - Under "Workflow permissions", select **Read and write permissions**.
+    - Click **Save**.
+3.  Go to **Settings** -> **Pages**.
+    - Under "Build and deployment", set **Source** to **GitHub Actions**.
 
-## 3. Prepare Signing Assets
+## 3. Prepare Secrets & Variables
 
-Have these files ready (paths are examples):
+You need to provide your signing keys to GitHub so it can sign the app for you.
 
-- `./Certificates/apple_distribution.p12`
-- `./Certificates/Asspp_AdHoc.mobileprovision`
+### Option A: Automatic Setup (Recommended)
 
-## 4. Generate Workflow Inputs (Recommended)
+We provide a script to generate the necessary values for you.
 
-Run the helper script to auto-extract Team ID, Bundle ID, and export method, then produce ready-to-apply secrets and variables:
+1.  Open Terminal and navigate to the project directory.
+2.  Run the helper script:
 
-```bash
-./Resources/Scripts/generate.github.action.inputs.sh \
-  --p12 ./Certificates/apple_distribution.p12 \
-  --p12-password 'your-p12-password' \
-  --mobileprovision ./Certificates/Asspp_AdHoc.mobileprovision \
-  --ota-base-url https://app.example.com
-```
+    ```bash
+    ./Resources/Scripts/generate.github.action.inputs.sh \
+      --p12 /path/to/your/certificate.p12 \
+      --p12-password 'your-p12-password' \
+      --mobileprovision /path/to/your/profile.mobileprovision
+    ```
 
-Apply the generated output:
+3.  The script will output a set of Secrets and Variables. You can either:
+    - Copy-paste them manually into GitHub Settings.
+    - Or use the generated `apply-with-gh.sh` script (requires `gh` CLI tool) to apply them automatically.
 
-```bash
-export GITHUB_REPOSITORY="<owner>/<repo>"
-<output-dir>/apply-with-gh.sh
-```
+### Option B: Manual Setup
 
-Alternatively, copy the values from `<output-dir>/secrets` and `<output-dir>/variables` into GitHub manually.
+Go to **Settings** -> **Secrets and variables** -> **Actions**.
 
-## 5. Secrets & Variables Reference
+#### Secrets (New Repository Secret)
 
-### Secrets
+| Name                              | Value             | Description                                                      |
+| :-------------------------------- | :---------------- | :--------------------------------------------------------------- |
+| `IOS_CERT_P12_BASE64`             | `[Base64 String]` | The content of your `.p12` file converted to Base64.             |
+| `IOS_CERT_PASSWORD`               | `[String]`        | The password for your `.p12` file.                               |
+| `IOS_PROVISIONING_PROFILE_BASE64` | `[Base64 String]` | The content of your `.mobileprovision` file converted to Base64. |
 
-| Name                              | Required | Description                                |
-| --------------------------------- | -------- | ------------------------------------------ |
-| `IOS_CERT_P12_BASE64`             | Yes      | Base64-encoded `.p12` certificate          |
-| `IOS_CERT_PASSWORD`               | Yes      | Password used when exporting the `.p12`    |
-| `IOS_PROVISIONING_PROFILE_BASE64` | Yes      | Base64-encoded `.mobileprovision`          |
-| `IOS_KEYCHAIN_PASSWORD`           | No       | Temporary keychain password on CI runner   |
-| `IOS_TEAM_ID`                     | No       | Team ID (auto-read from profile if absent) |
+_To get Base64 on macOS:_ `base64 -i certificate.p12 | pbcopy`
 
-### Variables
+#### Variables (New Repository Variable)
 
-| Name                   | Required | Example                   | Description                                          |
-| ---------------------- | -------- | ------------------------- | ---------------------------------------------------- |
-| `IOS_EXPORT_METHOD`    | No       | `ad-hoc`                  | Export method; defaults to `ad-hoc`                  |
-| `IOS_SIGNING_IDENTITY` | No       | `Apple Distribution`      | Auto-selected by export method if empty              |
-| `IOS_BUNDLE_ID`        | No       | `wiki.qaq.Asspp`          | Override Bundle ID (must match provisioning profile) |
-| `IOS_OTA_BASE_URL`     | No       | `https://app.example.com` | Custom OTA base URL; defaults to GitHub Pages URL    |
+| Name                | Value            | Description                                                                                                               |
+| :------------------ | :--------------- | :------------------------------------------------------------------------------------------------------------------------ |
+| `IOS_BUNDLE_ID`     | `wiki.qaq.Asspp` | **Important**: Must match the App ID in your Provisioning Profile.                                                        |
+| `IOS_EXPORT_METHOD` | `ad-hoc`         | Usually `ad-hoc`.                                                                                                         |
+| `IOS_OTA_BASE_URL`  | _(Optional)_     | If you use a custom domain for GitHub Pages, enter it here (e.g., `https://apps.example.com`). Otherwise, leave it empty. |
 
-## 6. First Run
+## 4. Trigger the Build
 
-1. Open `Actions -> Upstream Signed iOS Build`
-2. Click **Run workflow**
-3. After success, verify:
-   - Release: `https://github.com/<owner>/<repo>/releases`
-   - Install page: `https://<owner>.github.io/<repo>/ios/latest/install.html`
-   - Manifest: `https://<owner>.github.io/<repo>/ios/latest/manifest.plist`
+1.  Go to the **Actions** tab in your forked repository.
+2.  Select the **Upstream Signed iOS Build** workflow on the left.
+3.  Click **Run workflow**.
+    - You can leave the inputs as default.
+4.  Wait for the build to complete (usually 5-10 minutes).
 
-> If the repository is named `<owner>.github.io`, omit `/<repo>` from the URL.
+## 5. Install
 
-## 7. Daily Usage
+Once the workflow finishes:
 
-- The workflow polls upstream `main` every 30 minutes
-- New commits trigger an automatic build, sign, and release
-- `ios/latest/install.html` always points to the latest signed build
+1.  Go to your repository's **Releases** page. You should see a new release.
+2.  Open the **Installation Page** on your iPhone (Safari):
+    - URL format: `https://<your-username>.github.io/<repo-name>/ios/latest/install.html`
+3.  Tap **Install**.
 
-## 8. Manual Trigger Options
+## Troubleshooting
 
-In `Actions -> Upstream Signed iOS Build -> Run workflow`:
-
-| Input           | Values / Example       | Description                                           |
-| --------------- | ---------------------- | ----------------------------------------------------- |
-| `source_kind`   | `upstream` / `fork`    | Build from upstream or your own fork                  |
-| `source_branch` | `main`, `feature/test` | Branch to build                                       |
-| `source_repo`   | `Lakr233/Asspp`        | Repository (used when `source_kind=upstream`)         |
-| `force_build`   | `true` (default)       | Skip commit-change check; always build when triggered |
-
-Examples:
-
-- Build your fork's `feature/sign-fix`: `source_kind=fork`, `source_branch=feature/sign-fix`
-- Build upstream `develop`: `source_kind=upstream`, `source_repo=Lakr233/Asspp`, `source_branch=develop`
-
-## 9. Troubleshooting
-
-| Symptom                      | Fix                                                         |
-| ---------------------------- | ----------------------------------------------------------- |
-| Install button does nothing  | Open the install page in Safari, not an in-app browser      |
-| Install fails immediately    | Device UDID is missing from the Ad Hoc provisioning profile |
-| Bundle ID mismatch error     | Ensure `IOS_BUNDLE_ID` matches the App ID in your profile   |
-| Page loads but install fails | Confirm `manifest.plist` is publicly accessible over HTTPS  |
+- **"Unable to Verify App"**: Go to iOS Settings -> General -> VPN & Device Management and trust your certificate.
+- **Installation waits forever**: Ensure your device's UDID is included in the Provisioning Profile you uploaded.
+- **Build fails**: Check the Actions logs. Common errors include mismatched Bundle IDs or expired certificates.
