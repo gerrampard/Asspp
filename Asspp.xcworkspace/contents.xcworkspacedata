@@ -4,7 +4,4 @@
    <FileRef
       location = "group:Asspp.xcodeproj">
    </FileRef>
-   <FileRef
-      location = "group:Foundation/ApplePackage">
-   </FileRef>
 </Workspace>

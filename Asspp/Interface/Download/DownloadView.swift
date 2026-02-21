@@ -8,30 +8,41 @@
 import SwiftUI
 
 struct DownloadView: View {
-    @StateObject var vm = Downloads.this
+    @State private var vm = Downloads.this
 
     var body: some View {
-        #if os(iOS)
-            NavigationView {
-                content
-                    .navigationTitle("Downloads")
-            }
-            .navigationViewStyle(.stack)
-        #else
-            NavigationStack {
-                content
-                    .navigationTitle("Downloads")
-            }
-        #endif
+        NavigationStack {
+            content
+                .navigationTitle("Downloads")
+        }
     }
 
-    var content: some View {
-        FormOnTahoeList {
+    private var content: some View {
+        Group {
             if vm.manifests.isEmpty {
-                Text("No downloads yet.")
+                ContentUnavailableView(
+                    label: {
+                        Label("No Downloads", systemImage: "arrow.down.circle")
+                    },
+                    description: {
+                        Text("Search for an app or add a download link to get started.")
+                    },
+                    actions: {
+                        NavigationLink("Add Download") {
+                            AddDownloadView()
+                        }
+                    },
+                )
+                .padding()
             } else {
-                packageList
+                Form {
+                    packageList
+                }
             }
+        }
+        .formStyle(.grouped)
+        .navigationDestination(for: PackageManifest.self) { manifest in
+            PackageView(pkg: manifest)
         }
         .toolbar {
             NavigationLink(destination: AddDownloadView()) {
@@ -40,9 +51,9 @@ struct DownloadView: View {
         }
     }
 
-    var packageList: some View {
+    private var packageList: some View {
         ForEach(vm.manifests, id: \.id) { req in
-            NavigationLink(destination: PackageView(pkg: req)) {
+            NavigationLink(value: req) {
                 VStack(spacing: 8) {
                     ArchivePreviewView(archive: req.package)
                     SimpleProgress(progress: req.state.percent)
@@ -61,7 +72,7 @@ struct DownloadView: View {
                 ForEach(actions, id: \.self) { action in
                     let label = vm.getActionLabel(for: action)
                     Button(role: label.isDestructive ? .destructive : .none) {
-                        Task { vm.performDownloadAction(for: req, action: action) }
+                        vm.performDownloadAction(for: req, action: action)
                     } label: {
                         Label(label.title, systemImage: label.systemImage)
                     }

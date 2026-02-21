@@ -11,11 +11,12 @@
 
         var body: some View {
             NavigationStack {
-                FormOnTahoeList {
+                Form {
                     ForEach(vm.devices) {
                         DeviceSection(vm: vm, device: $0)
                     }
                 }
+                .formStyle(.grouped)
                 .disabled(isLoading)
             }
             .toolbar {
@@ -66,7 +67,7 @@
     }
 
     private struct AppRow: View {
-        @StateObject var vm = AppStore.this
+        @State var vm = AppStore.this
         var preferredIconSize: CGFloat? {
             50
         }
@@ -78,7 +79,7 @@
                 KFImage(URL(string: app.info.package.software.artworkUrl))
                     .antialiased(true)
                     .resizable()
-                    .cornerRadius(0.2184466 * (preferredIconSize ?? 50))
+                    .clipShape(.rect(cornerRadius: 0.2184466 * (preferredIconSize ?? 50)))
                     .frame(width: preferredIconSize ?? 50, height: preferredIconSize ?? 50, alignment: .center)
                     .shadow(radius: 1)
                 VStack(alignment: .leading) {

@@ -32,6 +32,7 @@
 
         func loadDevices() async {
             resetError()
+            logger.info("loading devices")
             do {
                 let devices = try await DeviceCTL.listDevices()
                     .filter { [.iPad, .iPhone].contains($0.type) }
@@ -40,7 +41,9 @@
                     selectedDeviceID = devices.first?.id
                 }
                 self.devices = devices
+                logger.info("found \(devices.count) devices")
             } catch {
+                logger.warning("failed to load devices: \(error)")
                 updateError(error)
             }
         }
@@ -48,13 +51,16 @@
         func install(ipa: URL, to device: DeviceCTL.Device) async -> Bool {
             resetError()
             let process = Process()
+            logger.info("installing \(ipa.lastPathComponent) to \(device.name)")
 
             await MainActor.run { busyDevices[device] = process }
             let result: Bool
             do {
                 try await DeviceCTL.install(ipa: ipa, to: device, process: process)
+                logger.info("install succeeded for \(device.name)")
                 result = true
             } catch {
+                logger.warning("install failed for \(device.name): \(error)")
                 updateError(error)
                 result = false
             }
@@ -67,7 +73,7 @@
                 package: package,
                 storeID: account.store,
                 region: ApplePackage.Configuration.countryCode(for: account.store) ?? "--",
-                accountID: account.appleId
+                accountID: account.appleId,
             ))
         }
 
@@ -119,7 +125,7 @@
                 do {
                     try await _checkForUpdate(app, for: device, process: process)
                 } catch {
-                    logger.warning("failed to update \(app.info.id), error: \(error)")
+                    logger.warning("failed to update \(app.info.id): \(error)")
                     app.state = .error(error.localizedDescription)
                     try? await Task.sleep(for: .seconds(1))
                 }
@@ -133,7 +139,7 @@
         private func _checkForUpdate(_ app: InstalledApp, for device: DeviceCTL.Device, process: Process) async throws {
             let latest = try await ApplePackage.Lookup.lookup(
                 bundleID: app.info.id,
-                countryCode: app.info.region
+                countryCode: app.info.region,
             )
 
             guard latest.version.compare(app.info.package.software.version, options: [.numeric]) == .orderedDescending else {
@@ -143,7 +149,7 @@
                     code: 1,
                     userInfo: [
                         NSLocalizedDescriptionKey: "No updates",
-                    ]
+                    ],
                 )
             }
             var updatedApp = app.info
@@ -161,7 +167,7 @@
                     code: 1,
                     userInfo: [
                         NSLocalizedDescriptionKey: "Download failed",
-                    ]
+                    ],
                 )
             }
             app.state = .downloading(request)
@@ -173,7 +179,7 @@
                     code: 1,
                     userInfo: [
                         NSLocalizedDescriptionKey: "iPA not found",
-                    ]
+                    ],
                 )
             }
 
@@ -201,29 +207,29 @@
         var symbol: String {
             switch self {
             case .iPhone:
-                return "iphone"
+                "iphone"
             case .iPad:
-                return "ipad"
+                "ipad"
             case .appleWatch:
-                return "applewatch"
+                "applewatch"
             }
         }
 
         var osVersionPrefix: String {
             switch self {
             case .iPhone:
-                return "iOS"
+                "iOS"
             case .iPad:
-                return "iPadOS"
+                "iPadOS"
             case .appleWatch:
-                return "watchOS"
+                "watchOS"
             }
         }
     }
 
     extension Error {
         var failureMessages: [String] {
-            [localizedDescription, (self as NSError).userInfo[NSLocalizedFailureReasonErrorKey] as? String].compactMap { $0 }
+            [localizedDescription, (self as NSError).userInfo[NSLocalizedFailureReasonErrorKey] as? String].compactMap(\.self)
         }
     }
 

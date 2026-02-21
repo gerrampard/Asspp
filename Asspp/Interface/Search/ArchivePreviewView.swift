@@ -19,22 +19,20 @@ struct ArchivePreviewView: View {
             KFImage(URL(string: archive.software.artworkUrl))
                 .antialiased(true)
                 .resizable()
-                .cornerRadius(0.2184466 * (preferredIconSize ?? 50))
+                .clipShape(.rect(cornerRadius: 0.2184466 * (preferredIconSize ?? 50)))
                 .frame(width: preferredIconSize ?? 50, height: preferredIconSize ?? 50, alignment: .center)
                 .shadow(radius: 1)
             VStack(alignment: .leading, spacing: 2) {
                 HStack(alignment: .firstTextBaseline) {
                     Text(archive.software.name)
-                        .font(.system(.headline, design: .rounded))
+                        .bold()
                         .lineLimit(2)
                     Spacer()
                     Text(archive.software.version)
-                        .font(.system(.footnote, design: .rounded))
                         .foregroundStyle(.secondary)
                 }
                 Text(archive.software.sellerName)
                     .lineLimit(1)
-                    .font(.system(.footnote, design: .rounded))
                     .foregroundStyle(.secondary)
             }
         }

@@ -7,49 +7,42 @@
 
 import AnyCodable
 import ApplePackage
-import Combine
 @preconcurrency import Digger
 import Foundation
 import Logging
 
+@Observable
 @MainActor
-class Downloads: NSObject, ObservableObject {
+class Downloads {
     static let this = Downloads()
 
-    @PublishedPersist(key: "DownloadRequests", defaultValue: [])
-    var manifests: [PackageManifest] {
-        didSet { updateSaver() }
-    }
+    @ObservationIgnored
+    private var _manifests = Persist<[PackageManifest]>(key: "DownloadRequests", defaultValue: [])
 
-    private var manifestSaver: Set<AnyCancellable> = []
+    var manifests: [PackageManifest] {
+        get {
+            access(keyPath: \.manifests)
+            return _manifests.wrappedValue
+        }
+        set {
+            withMutation(keyPath: \.manifests) {
+                _manifests.wrappedValue = newValue
+            }
+        }
+    }
 
     var runningTaskCount: Int {
         manifests.count(where: { $0.state.status == .downloading })
     }
 
-    override init() {
-        super.init()
+    init() {
         for idx in manifests.indices {
             manifests[idx].state.resetIfNotCompleted()
         }
-        updateSaver()
     }
 
-    private func updateSaver() {
-        manifestSaver.forEach { $0.cancel() }
-        manifestSaver.removeAll()
-        manifestSaver = Set(manifests.map { manifest in
-            manifest.objectWillChange.sink { [weak self] in
-                self?.objectWillChange.send()
-            }
-        })
-        objectWillChange
-            .receive(on: DispatchQueue.global())
-            .sink { [weak self] in
-                guard let self else { return }
-                _manifests.save()
-            }
-            .store(in: &manifestSaver)
+    func saveManifests() {
+        _manifests.save()
     }
 
     func downloadRequest(forArchive archive: AppStore.AppPackage) -> PackageManifest? {
@@ -57,39 +50,42 @@ class Downloads: NSObject, ObservableObject {
     }
 
     func add(request: PackageManifest) -> PackageManifest {
-        logger.info("adding download request \(request.id)")
+        logger.info("adding download request \(request.id) - \(request.package.software.name)")
         manifests.removeAll { $0.id == request.id }
         manifests.append(request)
         return request
     }
 
     func suspend(request: PackageManifest) {
-        logger.info("suspending download request id: \(request)")
-        DiggerManager.shared.cancelTask(for: request.url)
+        logger.info("suspending download request id: \(request.id)")
+        DiggerManager.shared.stopTask(for: request.url)
         request.state.resetIfNotCompleted()
+        saveManifests()
     }
 
     func resume(request: PackageManifest) {
-        logger.info("resuming download request id: \(request)")
+        logger.info("resuming download request id: \(request.id)")
         request.state.start()
         DiggerManager.shared.download(with: request.url)
             .speed { speedBytes in
-                DispatchQueue.main.async {
+                Task { @MainActor in
                     let fmt = ByteCountFormatter()
                     fmt.allowedUnits = .useAll
                     fmt.countStyle = .file
                     request.state.status = .downloading
                     request.state.speed = fmt.string(fromByteCount: Int64(speedBytes))
+                    self.saveManifests()
                 }
             }
             .progress { progress in
-                DispatchQueue.main.async {
+                Task { @MainActor in
                     request.state.status = .downloading
                     request.state.percent = progress.fractionCompleted
+                    self.saveManifests()
                 }
             }
             .completion { completion in
-                DispatchQueue.main.async {
+                Task { @MainActor in
                     switch completion {
                     case let .success(url):
                         Task.detached {
@@ -97,28 +93,36 @@ class Downloads: NSObject, ObservableObject {
                                 try await self.finalize(manifest: request, preparedContentAt: url)
                                 await MainActor.run {
                                     request.state.complete()
+                                    self.saveManifests()
                                 }
                             } catch {
                                 await MainActor.run {
                                     request.state.error = error.localizedDescription
+                                    self.saveManifests()
                                 }
                             }
                         }
                     case let .failure(error):
-                        if error is CancellationError {
-                            // not an error at all
+                        let nsError = error as NSError
+                        if nsError.domain == NSURLErrorDomain, nsError.code == NSURLErrorCancelled {
+                            // User-initiated cancellation via cancelTask(), not an error
+                        } else if error is CancellationError {
+                            // Swift structured concurrency cancellation
                         } else {
                             request.state.error = error.localizedDescription
+                            self.saveManifests()
                         }
                     }
                 }
             }
+        DiggerManager.shared.startTask(for: request.url)
+        saveManifests()
     }
 
     private func finalize(manifest: PackageManifest, preparedContentAt downloadedFile: URL) async throws {
         try? FileManager.default.createDirectory(
             at: manifest.targetLocation.deletingLastPathComponent(),
-            withIntermediateDirectories: true
+            withIntermediateDirectories: true,
         )
         try? FileManager.default.removeItem(at: manifest.targetLocation)
 
@@ -131,25 +135,29 @@ class Downloads: NSObject, ObservableObject {
         try FileManager.default.moveItem(at: downloadedFile, to: tempFile)
         defer { try? FileManager.default.removeItem(at: tempFile) }
 
-        logger.info("injecting signatures:\(manifest.id)")
-        try await SignatureInjector.inject(sinfs: manifest.signatures, into: tempFile.path)
+        logger.info("injecting signatures: \(manifest.id)")
+        try await SignatureInjector.inject(
+            sinfs: manifest.signatures,
+            iTunesMetadata: manifest.iTunesMetadata,
+            into: tempFile.path,
+        )
 
         logger.info("moving finalized file: \(manifest.id)")
         try FileManager.default.moveItem(at: tempFile, to: manifest.targetLocation)
     }
 
     func delete(request: PackageManifest) {
-        logger.info("deleting download request id: \(request)")
-        suspend(request: request)
+        logger.info("deleting download request id: \(request.id)")
+        DiggerManager.shared.cancelTask(for: request.url)
         request.delete()
         manifests.removeAll(where: { $0.id == request.id })
     }
 
     func restart(request: PackageManifest) {
         logger.info("restarting download request id: \(request.id)")
-        suspend(request: request)
+        DiggerManager.shared.cancelTask(for: request.url)
         request.delete()
-        request.state.resetIfNotCompleted()
+        request.state = .init()
         resume(request: request)
     }
 

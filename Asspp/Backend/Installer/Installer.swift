@@ -12,11 +12,12 @@ import Logging
 #endif
 import Vapor
 
-class Installer: Identifiable, ObservableObject, @unchecked Sendable {
-    let id: UUID
-    let app: Application
-    let archive: AppStore.AppPackage
-    let port = Int.random(in: 4000 ... 8000)
+@Observable
+class Installer: Identifiable, @unchecked Sendable {
+    @ObservationIgnored let id: UUID
+    @ObservationIgnored let app: Application
+    @ObservationIgnored let archive: AppStore.AppPackage
+    @ObservationIgnored let port = Int.random(in: 4000 ... 8000)
 
     enum Status {
         case ready
@@ -27,7 +28,7 @@ class Installer: Identifiable, ObservableObject, @unchecked Sendable {
     }
 
     @MainActor
-    @Published var status: Status = .ready
+    var status: Status = .ready
 
     init(archive: AppStore.AppPackage, path packagePath: URL) async throws {
         let id: UUID = .init()
@@ -70,7 +71,7 @@ class Installer: Identifiable, ObservableObject, @unchecked Sendable {
 
                 return try await req.fileio.asyncStreamFile(
                     at: packagePath.path,
-                    chunkSize: 64 * 1024
+                    chunkSize: 64 * 1024,
                 ) { result in
                     await MainActor.run {
                         self.status = .completed(result)
@@ -113,7 +114,7 @@ class Installer: Identifiable, ObservableObject, @unchecked Sendable {
             minimumOsVersion: "",
             releaseDate: "",
             formattedPrice: "",
-            primaryGenreName: ""
+            primaryGenreName: "",
         ))
 
         app = try await Self.setupApp(port: port, secured: false)
@@ -121,7 +122,7 @@ class Installer: Identifiable, ObservableObject, @unchecked Sendable {
         app.get("*") { req in
             try await req.fileio.asyncStreamFile(
                 at: certificateAtPath,
-                chunkSize: 64 * 1024
+                chunkSize: 64 * 1024,
             )
         }
 
@@ -144,7 +145,7 @@ class Installer: Identifiable, ObservableObject, @unchecked Sendable {
 
     func destroy() {
         guard !app.didShutdown else { return }
-        logger.info("installer destroy")
+        logger.info("destroying installer id: \(id)")
         Task.detached {
             await self.app.server.shutdown()
             try await self.app.asyncShutdown()

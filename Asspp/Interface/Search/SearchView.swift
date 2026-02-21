@@ -13,20 +13,21 @@ struct SearchView: View {
     @AppStorage("searchKey") var searchKey = ""
     @AppStorage("searchRegion") var searchRegion = "US"
     @FocusState var searchKeyFocused
-    @State var searchType = EntityType.iPhone
+    @State private var searchType = EntityType.iPhone
 
-    @State var searching = false
+    @State private var searching = false
     let regionKeys = Array(ApplePackage.Configuration.storeFrontValues.keys.sorted())
 
-    @State var searchInput: String = ""
+    @State private var searchInput: String = ""
     #if DEBUG
         @AppStorage("searchResults") // reduce API calls
         var searchResult: [AppStore.AppPackage] = []
     #else
-        @State var searchResult: [AppStore.AppPackage] = []
+        @State private var searchResult: [AppStore.AppPackage] = []
     #endif
 
-    @StateObject var vm = AppStore.this
+    @State private var navigationPath = NavigationPath()
+    @State private var vm = AppStore.this
     @Environment(\.horizontalSizeClass) var horizontalSizeClass
     var possibleRegion: Set<String> {
         vm.possibleRegions
@@ -34,23 +35,15 @@ struct SearchView: View {
 
     var body: some View {
         #if os(iOS)
-            if #available(iOS 16, *) {
-                // Temporary workaround for the auto-pop issue on iOS 16 when using NavigationView
-                // reference: https://stackoverflow.com/questions/66559814/swiftui-navigationlink-pops-out-by-itself#comment136786758_77588007
-                NavigationStack {
-                    if #available(iOS 26.0, *) {
-                        modernContent
-                    } else {
-                        legacyContent
-                    }
-                }
-            } else {
-                NavigationView {
+            NavigationStack(path: $navigationPath) {
+                if #available(iOS 26.0, *) {
+                    modernContent
+                } else {
                     legacyContent
                 }
             }
         #else
-            NavigationStack {
+            NavigationStack(path: $navigationPath) {
                 legacyContent
             }
         #endif
@@ -64,7 +57,7 @@ struct SearchView: View {
         } label: {
             Label("Type", systemImage: searchType.iconName)
         }
-        .onChangeCompact(of: searchType) { _ in
+        .onChange(of: searchType) { _, _ in
             searchResult = []
         }
     }
@@ -77,14 +70,14 @@ struct SearchView: View {
         Group {
             if !possibleRegionKeys.isEmpty {
                 buildPickView(
-                    for: possibleRegionKeys
+                    for: possibleRegionKeys,
                 ) {
                     Label("Available Regions", systemImage: "checkmark.seal")
                 }
                 if isAllRegionsWrappedInMenu {
                     Menu {
                         buildPickView(
-                            for: regionKeys
+                            for: regionKeys,
                         ) {
                             EmptyView()
                         }
@@ -94,7 +87,7 @@ struct SearchView: View {
                 } else {
                     // Wrapping in Menu on macOS will cause an addition hover to show all the regions
                     buildPickView(
-                        for: regionKeys
+                        for: regionKeys,
                     ) {
                         Label("All Regions", systemImage: "globe")
                     }
@@ -102,13 +95,13 @@ struct SearchView: View {
             } else {
                 // Reduce one interaction
                 buildPickView(
-                    for: regionKeys
+                    for: regionKeys,
                 ) {
                     EmptyView()
                 }
             }
         }
-        .onChangeCompact(of: searchRegion) { _ in
+        .onChange(of: searchRegion) { _, _ in
             searchResult = []
         }
     }
@@ -132,11 +125,11 @@ struct SearchView: View {
     }
 
     var content: some View {
-        FormOnTahoeList {
+        Form {
             if searching || !searchResult.isEmpty {
                 Section(searching ? "Searching..." : "\(searchResult.count) Results") {
                     ForEach(searchResult) { item in
-                        NavigationLink(destination: ProductView(archive: item, region: searchRegion)) {
+                        NavigationLink(value: ProductDestination(archive: item, region: searchRegion)) {
                             ArchivePreviewView(archive: item)
                         }
                     }
@@ -144,6 +137,13 @@ struct SearchView: View {
                 }
                 .transition(.opacity)
             }
+        }
+        .formStyle(.grouped)
+        .navigationDestination(for: ProductDestination.self) { dest in
+            ProductView(archive: dest.archive, region: dest.region, navigationPath: $navigationPath)
+        }
+        .navigationDestination(for: PackageManifest.self) { manifest in
+            PackageView(pkg: manifest)
         }
         .animation(.spring, value: searchResult)
     }
@@ -163,26 +163,29 @@ struct SearchView: View {
         searchKeyFocused = false
         searching = true
         searchInput = "\(searchRegion) - \(searchKey)" + " ..."
+        logger.info("search: term=\(searchKey) region=\(searchRegion) type=\(searchType.rawValue)")
         Task {
             do {
                 var result = try await ApplePackage.Searcher.search(
                     term: searchKey,
                     countryCode: searchRegion,
                     limit: 32,
-                    entityType: searchType
+                    entityType: searchType,
                 )
                 if let app = try? await ApplePackage.Lookup.lookup(
                     bundleID: searchKey,
-                    countryCode: searchRegion
+                    countryCode: searchRegion,
                 ) {
                     result.insert(app, at: 0)
                 }
+                logger.info("search completed: \(result.count) results for term=\(searchKey)")
                 await MainActor.run {
                     searching = false
                     searchResult = result.map { AppStore.AppPackage(software: $0) }
                     searchInput = "\(searchRegion) - \(searchKey)"
                 }
             } catch {
+                logger.error("search failed: term=\(searchKey) error=\(error.localizedDescription)")
                 await MainActor.run {
                     searching = false
                     searchResult = []
@@ -191,6 +194,11 @@ struct SearchView: View {
             }
         }
     }
+}
+
+struct ProductDestination: Hashable {
+    let archive: AppStore.AppPackage
+    let region: String
 }
 
 extension SearchView {

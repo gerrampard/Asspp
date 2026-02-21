@@ -43,7 +43,7 @@ struct FileAnalysisView: View {
     }
 
     var body: some View {
-        FormOnTahoeList {
+        Form {
             if let extractedFile {
                 Section {
                     VStack(alignment: .leading, spacing: 16) {
@@ -87,6 +87,7 @@ struct FileAnalysisView: View {
                     .transition(.opacity)
             }
         }
+        .formStyle(.grouped)
         .animation(.spring, value: relativePath)
         .animation(.spring, value: extractedFile)
         .onAppear {

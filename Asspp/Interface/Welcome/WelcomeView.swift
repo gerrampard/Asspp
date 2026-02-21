@@ -40,7 +40,7 @@ struct WelcomeView: View {
                             .padding(32)
                     }
                 }
-                Text("App Store itself is unstable, retry if needed.")
+                Text("The App Store API can be unstable. Retry if an error occurs.")
             }
             .font(.footnote)
             .foregroundStyle(.secondary)
@@ -50,7 +50,7 @@ struct WelcomeView: View {
         .background(
             ColorfulView(color: .constant(.winter))
                 .opacity(0.25)
-                .ignoresSafeArea()
+                .ignoresSafeArea(),
         )
         #if os(macOS)
         .toolbarBackgroundVisibility(.hidden, for: .windowToolbar)

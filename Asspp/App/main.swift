@@ -10,21 +10,29 @@ import Digger
 import Logging
 import SwiftUI
 
+LoggingSystem.bootstrap { label in
+    LogManagerHandler(label: label)
+}
+
 let logger = {
     var logger = Logger(label: "wiki.qaq.asspp")
     logger.logLevel = .debug
     return logger
 }()
 
+APLogger.verbose = true
+APLogger.logger = Logger(label: "wiki.qaq.asspp.applepackage")
+
 let version = [
     Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String,
     Bundle.main.infoDictionary?["CFBundleVersion"] as? String,
 ]
 .compactMap { $0 ?? "?" }
-.joined(separator: ".")
+.joined(separator: " ")
 
 let bundleIdentifier = Bundle.main.bundleIdentifier!
 logger.info("Asspp \(bundleIdentifier) \(version) starting up...")
+logger.info("Platform: \(ProcessInfo.processInfo.operatingSystemVersionString)")
 
 private let availableDirectories = FileManager
     .default
@@ -44,7 +52,7 @@ do {
 try? FileManager.default.createDirectory(
     at: documentsDirectory,
     withIntermediateDirectories: true,
-    attributes: nil
+    attributes: nil,
 )
 let temporaryDirectory = URL(fileURLWithPath: NSTemporaryDirectory())
     .appendingPathComponent(bundleIdentifier)
@@ -61,7 +69,7 @@ do {
 try? FileManager.default.createDirectory(
     at: temporaryDirectory,
     withIntermediateDirectories: true,
-    attributes: nil
+    attributes: nil,
 )
 
 _ = ProcessInfo.processInfo.hostName
@@ -76,54 +84,6 @@ DiggerManager.shared.startDownloadImmediately = true
 #endif
 
 App.main()
-
-#if canImport(UIKit)
-    import UIKit
-
-    class AppDelegate: NSObject, UIApplicationDelegate {
-        var taskIdentifier: UIBackgroundTaskIdentifier = .invalid
-
-        func applicationWillResignActive(_: UIApplication) {
-            let task = UIApplication.shared.beginBackgroundTask(withName: "Install Service") {}
-            taskIdentifier = task
-        }
-
-        func applicationWillEnterForeground(_: UIApplication) {
-            UIApplication.shared.endBackgroundTask(taskIdentifier)
-        }
-    }
-#endif
-
-#if canImport(AppKit) && !canImport(UIKit)
-    import AppKit
-    import Combine
-
-    class AppDelegate: NSObject, NSApplicationDelegate {
-        var downloadsObserver: AnyCancellable?
-        func applicationDidFinishLaunching(_ notification: Notification) {
-            downloadsObserver = Downloads.this.objectWillChange
-                .sink {
-                    let downloadingTaskCount = Downloads.this.runningTaskCount
-                    NSApp.dockTile.badgeLabel = downloadingTaskCount > 0 ? "\(downloadingTaskCount)" : nil
-                }
-        }
-
-        func applicationWillResignActive(_ notification: Notification) {
-            // Handle app going to background on macOS
-        }
-
-        func applicationDidBecomeActive(_ notification: Notification) {
-            // Handle app coming to foreground on macOS
-            if let mainWindow = NSApplication.shared.windows.first(where: { $0.identifier?.rawValue == "main-window" }) {
-                mainWindow.styleMask = [.titled, .closable, .fullSizeContentView, .fullScreen]
-            }
-        }
-
-        func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
-            Downloads.this.runningTaskCount == 0
-        }
-    }
-#endif
 
 private struct App: SwiftUI.App {
     #if canImport(UIKit)

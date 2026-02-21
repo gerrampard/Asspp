@@ -26,14 +26,14 @@ struct PackageDisplayView: View {
                         style = .detail
                     } label: {
                         Text("More")
-                            .font(.system(.footnote, design: .rounded))
+                            .foregroundStyle(.secondary)
                             .padding(.leading, 10)
                     }
                     .buttonStyle(.borderless)
                     .background(LinearGradient(
                         gradient: Gradient(colors: [.clear, .white]),
                         startPoint: .init(x: 0, y: 0.5),
-                        endPoint: .init(x: 0.2, y: 0.5)
+                        endPoint: .init(x: 0.2, y: 0.5),
                     ).blendMode(.destinationOut))
                     .transition(.scale)
                 }
@@ -55,7 +55,7 @@ struct PackageDisplayView: View {
                         Text(archive.software.description)
                     }
                 }
-                .font(.system(.footnote, design: .rounded))
+                .foregroundStyle(.secondary)
             }
         }
     }

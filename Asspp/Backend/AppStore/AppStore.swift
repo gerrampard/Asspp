@@ -6,41 +6,72 @@
 //
 
 import ApplePackage
-import Combine
 import Foundation
 
-class AppStore: ObservableObject {
-    var cancellables: Set<AnyCancellable> = .init()
-
-    @MainActor
-    @PublishedPersist(
+@Observable
+@MainActor
+class AppStore {
+    @ObservationIgnored
+    private var _accounts = Persist<[UserAccount]>(
         key: "Accounts",
         defaultValue: [],
-        keychain: "wiki.qaq.Asspp.Accounts"
+        engine: KeychainStorage(service: "wiki.qaq.Asspp.Accounts"),
     )
-    var accounts: [UserAccount]
 
-    @MainActor
-    @PublishedPersist(
+    var accounts: [UserAccount] {
+        get {
+            access(keyPath: \.accounts)
+            return _accounts.wrappedValue
+        }
+        set {
+            withMutation(keyPath: \.accounts) {
+                _accounts.wrappedValue = newValue
+            }
+        }
+    }
+
+    @ObservationIgnored
+    private var _deviceIdentifier = Persist<String>(
         key: "DeviceIdentifier",
         defaultValue: "",
-        keychain: "wiki.qaq.Asspp.DeviceIdentifier"
+        engine: KeychainStorage(service: "wiki.qaq.Asspp.DeviceIdentifier"),
     )
-    var deviceIdentifier: String
 
-    @MainActor
-    @PublishedPersist(key: "DemoMode", defaultValue: false)
-    var demoMode: Bool
+    var deviceIdentifier: String {
+        get {
+            access(keyPath: \.deviceIdentifier)
+            return _deviceIdentifier.wrappedValue
+        }
+        set {
+            withMutation(keyPath: \.deviceIdentifier) {
+                _deviceIdentifier.wrappedValue = newValue
+            }
+        }
+    }
 
-    @MainActor
+    @ObservationIgnored
+    private var _demoMode = Persist<Bool>(key: "DemoMode", defaultValue: false)
+
+    var demoMode: Bool {
+        get {
+            access(keyPath: \.demoMode)
+            return _demoMode.wrappedValue
+        }
+        set {
+            withMutation(keyPath: \.demoMode) {
+                _demoMode.wrappedValue = newValue
+            }
+        }
+    }
+
     static let this = AppStore()
 
-    @MainActor
     private init() {
         if deviceIdentifier.isEmpty {
             do {
                 let systemIdentifier = try ApplePackage.DeviceIdentifier.system()
                 deviceIdentifier = systemIdentifier
+                logger.info("obtained system device identifier")
             } catch {
                 logger.warning("failed to get system device identifier, falling back to random one: \(error)")
                 let randomIdentifier = ApplePackage.DeviceIdentifier.random()
@@ -51,31 +82,29 @@ class AppStore: ObservableObject {
         ApplePackage.Configuration.deviceIdentifier = deviceIdentifier
     }
 
-    @MainActor
     @discardableResult
     func save(email: String, account: ApplePackage.Account) -> UserAccount {
+        logger.info("saving account for user")
         let account = UserAccount(account: account)
         accounts = (accounts.filter { $0.account.email != email } + [account])
             .sorted { $0.account.email < $1.account.email }
         return account
     }
 
-    @MainActor
     func delete(id: UserAccount.ID) {
+        logger.info("deleting account id: \(id)")
         accounts = accounts.filter { $0.id != id }
     }
 
-    @MainActor
     var possibleRegions: Set<String> {
         Set(accounts.compactMap { ApplePackage.Configuration.countryCode(for: $0.account.store) })
     }
 
-    @MainActor
     func eligibleAccounts(for region: String) -> [UserAccount] {
         accounts.filter { ApplePackage.Configuration.countryCode(for: $0.account.store) == region }
     }
 
-    func withAccount<T>(id: String, _ body: (inout UserAccount) async throws -> T) async throws -> T {
+    nonisolated func withAccount<T>(id: String, _ body: (inout UserAccount) async throws -> T) async throws -> T {
         if let idx = await accounts.firstIndex(where: { $0.id == id }) {
             var account = await accounts[idx]
             let result = try await body(&account)

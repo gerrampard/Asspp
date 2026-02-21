@@ -11,11 +11,7 @@ extension View {
     @ViewBuilder
     func mediumAndLargeDetents() -> some View {
         #if os(iOS)
-            if #available(iOS 16.0, *) {
-                presentationDetents([.medium, .large])
-            } else {
-                self
-            }
+            presentationDetents([.medium, .large])
         #else
             self
         #endif
@@ -61,18 +57,12 @@ extension View {
     }
 
     @ViewBuilder
-    func onChangeCompact<Value: Equatable>(
-        of value: Value,
-        initial: Bool = false,
-        perform action: @escaping (Value) -> Void
-    ) -> some View {
-        if #available(iOS 18.0, macOS 15.0, *) {
-            onChange(of: value, initial: initial) { _, newValue in
-                action(newValue)
-            }
-        } else {
-            onChange(of: value, perform: action)
-        }
+    func smallControlSizeOnMac() -> some View {
+        #if os(macOS)
+            controlSize(.small)
+        #else
+            self
+        #endif
     }
 
     @ViewBuilder
@@ -81,36 +71,11 @@ extension View {
 
 public extension ToolbarContent {
     @ToolbarContentBuilder
-    @available(iOS 16.0, macOS 13.0, *)
     nonisolated func hideSharedBackground() -> some ToolbarContent {
         if #available(iOS 26.0, macOS 26.0, *) {
             sharedBackgroundVisibility(.hidden)
         } else {
             self
         }
-    }
-}
-
-struct FormOnTahoeList<Content: View>: View {
-    @ViewBuilder let content: Content
-
-    var body: some View {
-        #if os(macOS) && compiler(>=6.2)
-            if #available(macOS 26.0, *) {
-                Form {
-                    content
-                }
-                .formStyle(.grouped)
-            } else {
-                List {
-                    content
-                }
-                // footers on Sequoia looks weird ...
-            }
-        #else
-            List {
-                content
-            }
-        #endif
     }
 }

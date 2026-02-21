@@ -6,22 +6,25 @@
 //
 
 import ApplePackage
+import ButtonKit
 import Kingfisher
 import SwiftUI
 
 struct ProductView: View {
-    @StateObject var archive: AppPackageArchive
+    @State private var archive: AppPackageArchive
+    @Binding var navigationPath: NavigationPath
 
     var region: String {
         archive.region
     }
 
-    init(archive: AppStore.AppPackage, region: String) {
-        _archive = .init(wrappedValue: AppPackageArchive(accountID: nil, region: region, package: archive))
+    init(archive: AppStore.AppPackage, region: String, navigationPath: Binding<NavigationPath>) {
+        _archive = State(initialValue: AppPackageArchive(accountID: nil, region: region, package: archive))
+        _navigationPath = navigationPath
     }
 
-    @StateObject var vm = AppStore.this
-    @StateObject var dvm = Downloads.this
+    @State private var vm = AppStore.this
+    @State private var dvm = Downloads.this
 
     var eligibleAccounts: [AppStore.UserAccount] {
         vm.eligibleAccounts(for: region)
@@ -31,13 +34,10 @@ struct ProductView: View {
         vm.accounts.first { $0.id == selection }
     }
 
-    @State var selection: AppStore.UserAccount.ID = .init()
-    @State var obtainDownloadURL = false
-    @State var showDownloadPage = false
-    @State var licenseHint: String = ""
-    @State var acquiringLicense = false
-    @State var showLicenseAlert = false
-    @State var hint: Hint?
+    @State private var selection: AppStore.UserAccount.ID = .init()
+    @State private var licenseHint: String = ""
+    @State private var showLicenseAlert = false
+    @State private var hint: Hint?
 
     let sizeFormatter: ByteCountFormatter = {
         let formatter = ByteCountFormatter()
@@ -54,10 +54,11 @@ struct ProductView: View {
     }
 
     var body: some View {
-        FormOnTahoeList {
+        Form {
             accountSelector
             buttons
             packageHeader
+            packageDetails
             packageDescription
             if account == nil {
                 Section {
@@ -71,8 +72,12 @@ struct ProductView: View {
             }
             pricing
         }
+        .formStyle(.grouped)
         .onAppear {
             selection = eligibleAccounts.first?.id ?? .init()
+        }
+        .navigationDestination(for: PackageManifest.self) { manifest in
+            PackageView(pkg: manifest)
         }
         .navigationTitle("Select Account")
         .alert("License Required", isPresented: $showLicenseAlert) {
@@ -85,7 +90,21 @@ struct ProductView: View {
 
             return Group {
                 Button("Acquire License", role: confirmRole) {
-                    acquireLicense()
+                    guard let account else { return }
+                    Task {
+                        do {
+                            try await vm.withAccount(id: account.id) { userAccount in
+                                try await ApplePackage.Authenticator.rotatePasswordToken(for: &userAccount.account)
+                                try await ApplePackage.Purchase.purchase(
+                                    account: &userAccount.account,
+                                    app: archive.package.software,
+                                )
+                            }
+                            licenseHint = String(localized: "Request Succeeded")
+                        } catch {
+                            licenseHint = error.localizedDescription
+                        }
+                    }
                 }
 
                 Button("Cancel", role: .cancel) {}
@@ -106,16 +125,32 @@ struct ProductView: View {
                 Text("Version \(archive.package.software.version)")
                     .badge(badgeText)
             }
+        } header: {
+            Text("Package")
+        }
+    }
 
+    var packageDetails: some View {
+        Section {
+            CopyableRow(label: "Bundle ID", value: archive.package.software.bundleID, monospaced: true)
+            Text("Developer")
+                .badge(archive.package.software.sellerName)
+            if !archive.package.software.primaryGenreName.isEmpty {
+                Text("Category")
+                    .badge(archive.package.software.primaryGenreName)
+            }
             if let formattedSize {
                 Text("Size")
                     .badge(formattedSize)
             }
-
             Text("Compatibility")
                 .badge("\(archive.package.software.minimumOsVersion)+")
+            if archive.package.software.userRatingCount > 0 {
+                Text("Rating")
+                    .badge("\(String(format: "%.1f", archive.package.software.averageUserRating)) (\(archive.package.software.userRatingCount))")
+            }
         } header: {
-            Text("Package")
+            Text("Details")
         }
     }
 
@@ -130,12 +165,21 @@ struct ProductView: View {
     var pricing: some View {
         Section {
             Text("\(archive.formattedPrice ?? "N/A")")
-                .font(.system(.body, design: .rounded))
             if archive.price == 0 {
-                Button("Acquire License") {
-                    acquireLicense()
+                AsyncButton {
+                    guard let account else { return }
+                    try await vm.withAccount(id: account.id) { userAccount in
+                        try await ApplePackage.Authenticator.rotatePasswordToken(for: &userAccount.account)
+                        try await ApplePackage.Purchase.purchase(
+                            account: &userAccount.account,
+                            app: archive.package.software,
+                        )
+                    }
+                    licenseHint = String(localized: "Request Succeeded")
+                } label: {
+                    Text("Acquire License")
                 }
-                .disabled(acquiringLicense)
+                .disabledWhenLoading()
                 .disabled(account == nil)
             }
         } header: {
@@ -170,18 +214,30 @@ struct ProductView: View {
     var buttons: some View {
         Section {
             if let req = dvm.downloadRequest(forArchive: archive.package) {
-                // We intentionally don't use `navigationDestination(isPresented:destination:)` here on iOS 16+ & macOS 13+.
-                // To use it, we'd need to move the modifier out of this List and onto the enclosing `NavigationStack`,
-                // which would require intrusive changes at the root. If we drop the auto-show-on-download behaviour though,
-                // adopting `navigationDestination` would be feasible.
-                NavigationLink(destination: PackageView(pkg: req), isActive: $showDownloadPage) {
+                NavigationLink(value: req) {
                     Text("Show Download")
                 }
             } else {
-                Button(obtainDownloadURL ? "Communicating with Apple..." : "Request Download") {
-                    startDownload()
+                AsyncButton {
+                    guard let account else { return }
+                    do {
+                        try await dvm.startDownload(for: archive.package, accountID: account.id)
+                        hint = Hint(message: String(localized: "Download Requested"), color: nil)
+                        if let req = dvm.downloadRequest(forArchive: archive.package) {
+                            navigationPath.append(req)
+                        }
+                    } catch {
+                        if case ApplePackageError.licenseRequired = error, archive.package.software.price == 0 {
+                            showLicenseAlert = true
+                        } else {
+                            hint = Hint(message: String(localized: "Unable to retrieve download URL. Please try again later.") + "\n" + error.localizedDescription, color: .red)
+                        }
+                        throw error
+                    }
+                } label: {
+                    Text("Request Download")
                 }
-                .disabled(obtainDownloadURL)
+                .disabledWhenLoading()
                 .disabled(account == nil)
             }
         } header: {
@@ -189,59 +245,9 @@ struct ProductView: View {
         } footer: {
             if let hint {
                 Text(hint.message)
-                    .foregroundColor(hint.color)
+                    .foregroundStyle(hint.color ?? .primary)
             } else {
                 Text("Package can be installed later in download page.")
-            }
-        }
-    }
-
-    func startDownload() {
-        guard let account else { return }
-        obtainDownloadURL = true
-        Task {
-            do {
-                try await dvm.startDownload(for: archive.package, accountID: account.id)
-                await MainActor.run {
-                    obtainDownloadURL = false
-                    hint = Hint(message: String(localized: "Download Requested"), color: nil)
-                    showDownloadPage = true
-                }
-            } catch ApplePackageError.licenseRequired where archive.package.software.price == 0 && !acquiringLicense {
-                DispatchQueue.main.async {
-                    obtainDownloadURL = false
-                    showLicenseAlert = true
-                }
-            } catch {
-                DispatchQueue.main.async {
-                    obtainDownloadURL = false
-                    hint = Hint(message: String(localized: "Unable to retrieve download url, please try again later.") + "\n" + error.localizedDescription, color: .red)
-                }
-            }
-        }
-    }
-
-    func acquireLicense() {
-        guard let account else { return }
-        acquiringLicense = true
-        Task {
-            do {
-                try await vm.withAccount(id: account.id) { userAccount in
-                    try await ApplePackage.Authenticator.rotatePasswordToken(for: &userAccount.account)
-                    try await ApplePackage.Purchase.purchase(
-                        account: &userAccount.account,
-                        app: archive.package.software
-                    )
-                }
-                DispatchQueue.main.async {
-                    acquiringLicense = false
-                    licenseHint = String(localized: "Request Successes")
-                }
-            } catch {
-                DispatchQueue.main.async {
-                    acquiringLicense = false
-                    licenseHint = error.localizedDescription
-                }
             }
         }
     }

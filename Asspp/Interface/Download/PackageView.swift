@@ -6,6 +6,7 @@
 //
 
 import ApplePackage
+import ButtonKit
 import Kingfisher
 import SwiftUI
 
@@ -14,7 +15,7 @@ import SwiftUI
 #endif
 
 struct PackageView: View {
-    @StateObject var pkg: PackageManifest
+    @State var pkg: PackageManifest
 
     var archive: AppStore.AppPackage {
         pkg.package
@@ -26,24 +27,42 @@ struct PackageView: View {
 
     @Environment(\.dismiss) var dismiss
     #if os(iOS)
-        @State var installer: Installer?
-        @State var error: String = ""
+        @State private var installer: Installer?
+        @State private var error: String = ""
     #endif
     #if os(macOS)
         @State private var copied = false
     #endif
 
-    @StateObject var vm = AppStore.this
-    @ObservedObject var downloads = Downloads.this
+    @State private var vm = AppStore.this
+    @State private var downloads = Downloads.this
 
     var body: some View {
-        FormOnTahoeList {
+        Form {
             Section {
                 ArchivePreviewView(archive: archive)
             } header: {
                 Text("Package")
-            } footer: {
-                Text("\(archive.software.bundleID) - \(archive.software.version)")
+            }
+
+            Section {
+                CopyableRow(label: "Bundle ID", value: archive.software.bundleID, monospaced: true)
+                Text("Version")
+                    .badge(archive.software.version)
+                Text("Developer")
+                    .badge(archive.software.sellerName)
+                if !archive.software.primaryGenreName.isEmpty {
+                    Text("Category")
+                        .badge(archive.software.primaryGenreName)
+                }
+                Text("Compatibility")
+                    .badge("\(archive.software.minimumOsVersion)+")
+                if archive.software.userRatingCount > 0 {
+                    Text("Rating")
+                        .badge("\(String(format: "%.1f", archive.software.averageUserRating)) (\(archive.software.userRatingCount))")
+                }
+            } header: {
+                Text("Details")
             }
 
             if pkg.completed {
@@ -52,15 +71,12 @@ struct PackageView: View {
                 #endif
                 #if os(iOS)
                     Section {
-                        Button("Install") {
-                            Task {
-                                do {
-                                    installer = try await Installer(archive: archive, path: url)
-                                } catch {
-                                    self.error = error.localizedDescription
-                                }
-                            }
+                        AsyncButton {
+                            installer = try await Installer(archive: archive, path: url)
+                        } label: {
+                            Text("Install")
                         }
+                        .disabledWhenLoading()
                         .sheet(item: $installer) {
                             installer?.destroy()
                             installer = nil
@@ -109,7 +125,8 @@ struct PackageView: View {
                                 pasteboard.clearContents()
                                 pasteboard.setString(url.path, forType: .string)
                                 copied = true
-                                DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                                Task { @MainActor in
+                                    try? await Task.sleep(for: .seconds(1))
                                     copied = false
                                 }
                             } label: {
@@ -178,6 +195,7 @@ struct PackageView: View {
                 Text(url.path)
             }
         }
+        .formStyle(.grouped)
         .navigationTitle(pkg.package.software.name)
     }
 }

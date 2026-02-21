@@ -44,6 +44,7 @@
 .bundle
 .cache
 .cache/
+.claude/
 .com.apple.timemachine.donotpresent
 .dynamodb/
 .env
@@ -122,7 +123,9 @@ xcuserdata/
 yarn-debug.log*
 yarn-error.log*
 
-BuildTools/Package.resolved
-
 # Developer-specific xcconfig (required but gitignored)
 Configuration/Developer.xcconfig
+
+References/
+
+Foundation/ApplePackage/

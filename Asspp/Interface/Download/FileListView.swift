@@ -45,7 +45,7 @@ struct FileListView: View {
     }
 
     var body: some View {
-        FormOnTahoeList {
+        Form {
             Section {
                 ForEach(interfaceItems, id: \.path) { item in
                     switch item.type {
@@ -73,24 +73,25 @@ struct FileListView: View {
                 }
             }
         }
+        .formStyle(.grouped)
         #if os(iOS)
-        .searchable(text: $searchText, placement: .navigationBarDrawer(displayMode: .always))
+            .searchable(text: $searchText, placement: .navigationBarDrawer(displayMode: .always))
         #else
-        .searchable(text: $searchText)
+            .searchable(text: $searchText)
         #endif
-        .animation(.spring, value: items)
-        .onAppear {
-            Task {
-                await MainActor.run {
-                    message = "Examining contents..."
-                }
-                do { try await loadContents() }
-                catch {
-                    await MainActor.run { message = error.localizedDescription }
+            .animation(.spring, value: items)
+            .onAppear {
+                Task {
+                    await MainActor.run {
+                        message = "Examining contents..."
+                    }
+                    do { try await loadContents() }
+                    catch {
+                        await MainActor.run { message = error.localizedDescription }
+                    }
                 }
             }
-        }
-        .navigationTitle("Contents")
+            .navigationTitle("Contents")
     }
 
     func loadContents() async throws {

@@ -1,89 +1,71 @@
 # Asspp
 
-Seamless multi-account App Store management.
+**The Ultimate Multi-Region App Store Manager.**
+
+Asspp is a powerful client designed for users who need to manage **multiple Apple IDs** across **different countries and regions**. Switch stores instantly, download apps from anywhere, and manage your IPA library—all without logging out of your device.
 
 [简体中文 🇨🇳](./Resources/i18n/zh-Hans/README.md)
 
-For a command-line or library version of Asspp, check out [ApplePackage](https://github.com/Lakr233/ApplePackage).
+![Preview](./Resources/Screenshots/Apptisan_Asspp.png)
 
-## 👀 Preview
+## ✨ Why Asspp?
 
-![Preview](./Resources/Screenshots/README_PREVIEW_iPhone.png)
-![Preview Mac](./Resources/Screenshots/README_PREVIEW_MAC.png)
+- **🌍 Multi-Region Access**: Browse and search the US, Japan, China, or any other App Store region seamlessly. No more switching system accounts just to check an app.
+- **👥 Multi-Account Support**: Add unlimited Apple IDs. Asspp automatically uses the correct account for the store you are browsing.
+- **📦 IPA Management**: Download official, signed IPAs directly from Apple's servers for backup or sideloading.
+- **⏪ History Versions**: Need an older version of an app? Asspp makes it easy to find and download previous releases.
+- **📱 Cross-Platform**: Native experience on both **iOS** and **macOS**.
 
-## 🌟 Key Features
+## 📥 Installation
 
-- **Multi-Account**: Supports multiple Apple IDs
-- **Region Selection**: Choose your App Store region
-- **App Search**: Search for apps by keywords
-- **App Download**: Download apps from the App Store
-- **IPA Install**: Install IPAs on non-jailbroken devices
-- **IPA Sharing**: Share IPA files easily
-- **Historical Versions**: Download previous app versions
-- **Free App Purchase**: Purchase free apps
+### iOS
 
-## 📝 Requirements
+#### Option 1: Auto-Build & Sign (Recommended)
 
-### Prerequisites
+Fork this repository to automatically build and sign the app with your own developer certificate. This gives you a permanent **OTA installation link** that stays up-to-date with the latest changes.
 
-- [iOS App Signer](https://dantheman827.github.io/ios-app-signer/)
-- Self-signed certificate for `app.localhost.qaq.wiki` (install in Settings)
+👉 **[Setup Guide](./Resources/Document/FORK_AUTOBUILD_GUIDE.md)**
 
-### Troubleshooting
+#### Option 2: Manual Install
 
-- For issues like [#1](https://github.com/Lakr233/Asspp/issues/1), use the provided signing tool.
-- If installation fails, ensure the certificate is properly installed.
-- For app crashes or exits, verify you've signed into your App Store account and that your device system version is supported.
+1.  Download the latest `.ipa` from [Releases](https://github.com/Lakr233/Asspp/releases).
+2.  Sign and install using your preferred tool (e.g., SideStore, AltStore, TrollStore, or other signing service).
 
-### Installation Methods Comparison
+### macOS
 
-| Aspect                  | Local Installation                     | AirDrop Installation                                                      |
-| ----------------------- | -------------------------------------- | ------------------------------------------------------------------------- |
-| Devices Required        | Single device                          | Two devices                                                               |
-| App Store Compatibility | Undetectable\*                         | Compatible                                                                |
-| Auto-Updates            | No                                     | Yes                                                                       |
-| Prerequisites           | Install and trust certificate manually | Target device logged in with matching account, at least one app installed |
-| Internet Required       | Yes                                    | No                                                                        |
+1.  Download the latest `.zip` from [Releases](https://github.com/Lakr233/Asspp/releases).
+2.  Unzip and move `Asspp.app` to your Applications folder.
+3.  **First Run and Trusting the App (Recommended)**:
+    1.  Try double-clicking to open the app. If you see "App can’t be opened because the developer cannot be verified" or a similar message:
+        - In Finder, locate `Asspp.app`, **Control-click** (or right-click) the app and choose **Open**, then click **Open** again in the dialog. This will create a one-time trust exception for the app.
+    2.  If Control-clicking does not work or the app is still blocked:
+        - Open **System Settings** -> **Privacy & Security** (or System Preferences -> Security & Privacy on older macOS). In the General/Security section, look for the blocked app and click **Open Anyway** or **Allow**. You may need to enter an administrator password.
+    3.  Recommendation: Download from this repository's Releases and verify the release details to ensure the source is trusted before trusting and opening the app.
 
-- This installation method does not register the software with the App Store, so it cannot auto-update. Manual updates can retain data, but subsequent installations cannot use this software, and this method cannot overwrite existing apps.
+    > These steps follow macOS Gatekeeper practices and help minimize security risks while allowing you to run unsigned or self-signed apps.
 
-## 🚀 Usage
+## 🛠 Requirements
 
-# iPhone
+- **iOS**: iOS 17.0 or later.
+- **macOS**: macOS 15.0 or later.
+- **Apple ID**: Required to communicate with App Store APIs.
 
-- Visit the Releases page (https://github.com/Lakr233/Asspp/releases) and download the latest Asspp.ipa
-- Re-sign the IPA with a signing tool, then install it
-- Or use this Shortcut: https://www.icloud.com/shortcuts/d3c28f125b724a2da136d560fcf360dc
-  > Copy the link and run it, or add the shortcut to your share sheet; when opening the link choose "Open in Sidestore"
+## 🚨 Special Notice
 
-# Mac
+Asspp utilizes the same underlying communication protocol as `ipatool`. According to community speculation (unverified), previous outages of this protocol were likely caused by:
+1. Widespread usage triggering Apple's risk control mechanisms.
+2. Protocol modifications following the patching of an iCloud security vulnerability.
+3. Adjustments to Apple's front-end gateways, which now enforce stricter traffic allocation and request validation.
 
-- Visit the Releases page (https://github.com/Lakr233/Asspp/releases) and download the latest Asspp.zip
-- Unzip and open Asspp.app
+Given the increasingly strict management of these APIs, **if the protocol becomes invalid again in the future, this project may not be able to provide further fixes.**
 
-### First Run and Trusting the App (Recommended)
+**⚠️ Important Security Warnings:**
+1. **Protect your GUID:** Please treat your device GUID as a highly sensitive password. Never share or leak it to anyone.
+2. **Do NOT use your primary Apple ID:** We strongly advise using a secondary or burner account with this tool. If your account is banned by Apple, it could potentially result in an unremovable Activation Lock on your device (while there are no confirmed cases of this happening yet, we cannot make any guarantees).
 
-1. Try double-clicking to open the app. If you see "App can’t be opened because the developer cannot be verified" or a similar message:
-   - In Finder, locate Asspp.app, Control-click (or right-click) the app and choose "Open", then click "Open" again in the dialog. This will create a one-time trust exception for the app.
-2. If Control-clicking does not work or the app is still blocked:
-   - Open System Settings -> Privacy & Security (or System Preferences -> Security & Privacy on older macOS). In the General/Security section, look for the blocked app and click "Open Anyway" or "Allow". You may need to enter an administrator password.
-3. Recommendation: Download from this repository's Releases and verify the release details to ensure the source is trusted before trusting and opening the app.
+## ⚠️ Disclaimer
 
-> These steps follow macOS Gatekeeper practices and help minimize security risks while allowing you to run unsigned or self-signed apps.
-
-
-## 📋 Prebuilt Package
-
-Check the [Releases](https://github.com/Lakr233/Asspp/releases) page.
-
-
-## Star History
-
-[![Star History Chart](https://api.star-history.com/svg?repos=Lakr233/Asspp&type=date&legend=top-left)](https://www.star-history.com/#Lakr233/Asspp&type=date&legend=top-left)
-
-## 🧑‍⚖️ License
-
-Starting from version 2.2.16, the project is licensed under [MIT](./LICENSE).
+This project is for educational and research purposes only. It is not affiliated with Apple Inc. Use at your own risk.
 
 ## 🥰 Acknowledgments
 
@@ -91,7 +73,11 @@ Starting from version 2.2.16, the project is licensed under [MIT](./LICENSE).
 - [ipatool-ios](https://github.com/dlevi309/ipatool-ios)
 - [localhost.direct](https://get.localhost.direct/)
 
-`ipatool-ios` and `localhost.direct` are no longer used in the project.
+_`ipatool-ios` and `localhost.direct` are no longer used in the project._
+
+## 📄 License
+
+MIT License. See [LICENSE](./LICENSE) for details.
 
 ---
 

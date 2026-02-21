@@ -9,12 +9,12 @@ import ApplePackage
 import SwiftUI
 
 struct ProductHistoryView: View {
-    @StateObject var vm: AppPackageArchive
-    @State var showErrorAlert = false
+    @State var vm: AppPackageArchive
+    @State private var showErrorAlert = false
     @Environment(\.dismiss) var dismiss
 
     var body: some View {
-        FormOnTahoeList {
+        Form {
             ForEach(vm.versionIdentifiers, id: \.self) { key in
                 if let aid = vm.accountIdentifier, let pkg = vm.package(for: key) {
                     Menu {
@@ -30,7 +30,7 @@ struct ProductHistoryView: View {
                     } label: {
                         HStack {
                             Text(pkg.software.version)
-                                .foregroundColor(.accentColor)
+                                .foregroundStyle(.accent)
                             Spacer()
                         }
                         .contentShape(Rectangle())
@@ -40,7 +40,7 @@ struct ProductHistoryView: View {
                         vm.populateVersionItem(for: key)
                     } label: {
                         HStack {
-                            Text(key).foregroundColor(.secondary)
+                            Text(key).foregroundStyle(.secondary)
                             Spacer()
                         }
                         .contentShape(Rectangle())
@@ -48,6 +48,7 @@ struct ProductHistoryView: View {
                 }
             }
         }
+        .formStyle(.grouped)
         .overlay {
             ZStack {
                 Rectangle()
@@ -55,9 +56,7 @@ struct ProductHistoryView: View {
                     .background(.ultraThinMaterial)
                 ProgressView()
                     .progressViewStyle(.circular)
-                #if os(macOS)
-                    .controlSize(.small)
-                #endif
+                    .smallControlSizeOnMac()
             }
             .opacity(vm.loading ? 1 : 0)
             .animation(.default, value: vm.loading)
@@ -101,16 +100,14 @@ struct ProductHistoryView: View {
                 }
             }
         }
-        .alert(isPresented: $showErrorAlert) {
-            Alert(
-                title: Text("Oops"),
-                message: Text(vm.error ?? String(localized: "Unknown Error")),
-                dismissButton: .default(Text("OK"), action: {
-                    if vm.shouldDismiss {
-                        dismiss()
-                    }
-                })
-            )
+        .alert("Oops", isPresented: $showErrorAlert) {
+            Button("OK") {
+                if vm.shouldDismiss {
+                    dismiss()
+                }
+            }
+        } message: {
+            Text(vm.error ?? String(localized: "Unknown Error"))
         }
         .onAppear {
             guard vm.versionItems.isEmpty else { return }
